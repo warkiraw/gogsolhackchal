@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Калькулятор компенсации CO2</title>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+    background-image: url('background.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 40px;
+    color: #002147; /* темно-синий цвет */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.form-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    color: #002147; /* темно-синий цвет */
+}
+
+input[type="number"],
+select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+button {
+    background-color: #007bff; /* голубой цвет */
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    padding: 8px 16px;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #0056b3; /* более темный голубой цвет при наведении */
+}
+
+#result {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 20px;
+    color: #002147; /* темно-синий цвет */
+}
+
+footer {
+    text-align: center;
+    margin-top: 40px;
+    color: #fff; /* белый цвет текста */
+    background-color: rgba(0, 33, 71, 0.7); /* полупрозрачный темно-синий цвет */
+    padding: 20px;
+}
+
+footer img {
+    width: 100px;
+    margin-top: 20px;
+}
+
+    </style>
+</head>
+<body>
+    <h1>CO2 Compensation Calculator</h1>
+    <div class="form-container">
+        <label for="start">Select start city:</label>
+        <select id="start"></select>
+
+        <label for="end">Select destination city:</label>
+        <select id="end"></select>
+
+        <label for="cargo-weight">Cargo weight (tons):</label>
+        <input type="number" id="cargo-weight" min="1" step="1" required>
+
+        <label for="ship-type">Type of ship:</label>
+        <select id="ship-type">
+            <option value="container-ship">Container Ship</option>
+            <option value="tanker">Tanker</option>
+            <option value="bulk-carrier">Bulk Carrier</option>
+        </select>
+        <div class="currency">
+            <label for="currency">Choose currency:</label>
+            <select id="currency">
+                <option value="EUR">EUR</option>
+                <option value="USD">USD</option>
+                <option value="RUB">RUB</option>
+            </select>
+        </div>
+        <button onclick="calculateCO2()">Calculate</button>
+
+        <p id="result"></p>
+    </div>
+    <footer>
+        <p>Funds received from CO2 compensation are directed to nature protection organizations to offset emissions. The site also promotes people who invest money in nature development, which helps improve the reputation of businessmen.</p>
+        <img src="ship.png" alt="Ship">
+        <p>© 2022 Your Company</p>
+    </footer>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8GADTVjFMt1nFNiV0-ZytExXFXnFMypU"></script>
+    <script>
+        var cities = ['Paris', 'Berlin', 'Madrid', 'Rome', 'London', 'Amsterdam', 'Vienna', 'Athens', 'Stockholm', 'Dublin'];
+        cities.forEach(function(city) {
+            var option1 = document.createElement('option');
+            option1.value = city;
+            option1.textContent = city;
+            var option2 = document.createElement('option');
+            option2.value = city;
+            option2.textContent = city;
+            document.getElementById('start').appendChild(option1);
+            document.getElementById('end').appendChild(option2);
+        });
+
+        function calculatePrice(totalCO2, currency) {
+            var rate;
+            switch(currency) {
+                case 'USD':
+                    rate = 1.13; // Примерный курс для демонстрации
+                    break;
+                case 'RUB':
+                    rate = 87.32; // Примерный курс для демонстрации
+                    break;
+                default:
+                    rate = 1; // EUR
+            }
+
+            var price = totalCO2 * rate;
+            return price.toFixed(2);
+        };
+
+        function calculateCO2() {
+            var start = document.getElementById('start').value;
+            var end = document.getElementById('end').value;
+            var shipType = document.getElementById('ship-type').value;
+            var cargoWeight = parseFloat(document.getElementById('cargo-weight').value);
+
+            var directionsService = new google.maps.DirectionsService();
+            directionsService.route(
+                {
+                    origin: start,
+                    destination: end,
+                    travelMode: 'DRIVING'
+                },
+                function(response, status) {
+                    if (status === 'OK') {
+                        var distance = response.routes[0].legs[0].distance.value / 1000; // расстояние в км
+                        var emissionFactor;
+                        if (shipType === 'container-ship' || shipType === 'tanker') {
+                            emissionFactor = 12.5; // г CO2 на тонну-километр для контейнеровозов и танкеров
+                        } else {
+                            emissionFactor = 17.5; // г CO2 на тонну-километр для сухогрузов
+                        } // предположим, что груз весит 1 тонну
+                        var totalCO2 = cargoWeight * distance * emissionFactor / 1000000; // перевод в тонны и километры
+                        var currency = document.getElementById('currency').value;
+                        var price = calculatePrice(totalCO2, currency);
+
+                        document.getElementById('result').innerHTML = '<br>Distance ' + distance + ' km' + '<br>CO2 ' + totalCO2.toFixed(2) + ' k .<br>Offset: ' + parseFloat(price).toFixed(2) + ' ' + currency ;
+
+                    } else {
+                        window.alert('Directions request failed due to ' + status);
+                    }
+                });
+        }
+        
+    </script>
+</body>
+</html>
