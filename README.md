@@ -10,7 +10,7 @@ This project is a webpage that displays an image of a ship and a background imag
    git clone https://github.com/warkiraw/gogsolhackchal.git
 Open the file Untitaddadadadled-1.html in your browser:
 
-Double-click on the file Untitled-1.html in your file manager, or
+Double-click on the file Untitaddadadadled-1.html in your file manager, or
 In your browser, select File -> Open File and navigate to the file Untitled-1.html
 Example of opening the file in a browser:
 
